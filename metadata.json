@@ -1,0 +1,14 @@
+{
+  "name": "puppet-logstash",
+  "version": "0.1.0",
+  "author": "Jordan Conway",
+  "summary": "Installs and configures logstash forwarder",
+  "license": "Apache-2.0",
+  "source": "https://github.com/jordanconway/puppet-logstash",
+  "project_page": "https://github.com/jordanconway/puppet-logstash",
+  "issues_url": "https://github.com/jordanconway/puppet-logstash/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ]
+}
+
