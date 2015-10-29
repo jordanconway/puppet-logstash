@@ -3,7 +3,7 @@
 # Installs and configures logstash::forwarder
 class logstash::forwarder inherits logstash {
 
-  $config = hiera_hash($logstash::config)
+  $config = hiera_hash($logstash::config,'UNSET')
 
   if $logstash::use_ssl {
     file { "${logstash::ssl_dir}/certs/logstash-forwarder.ca":
