@@ -1,8 +1,19 @@
 # == Class: logstash::forwader
 #
 # Installs and configures logstash::forwarder
-class logstash::forwarder {
-  include logstash
+class logstash::forwarder (
+
+  $server,
+  $port,
+  $ssl_dir,
+  $ssl_ca,
+  $ssl_cert,
+  $ssl_key,
+  $package,
+  $servers,
+  $timeout,
+  $conf_ssl_ca,
+)inherits logstash {
 
   $config = hiera_hash(logstash::config,'UNSET')
 
