@@ -1,7 +1,8 @@
 # == Class: logstash::forwader
 #
 # Installs and configures logstash::forwarder
-class logstash::forwarder inherits logstash {
+class logstash::forwarder {
+  include logstash
 
   $config = hiera_hash(logstash::config,'UNSET')
 
@@ -18,7 +19,7 @@ class logstash::forwarder inherits logstash {
   package { 'logstash-forwarder':
     ensure   => installed,
     provider => 'rpm',
-    source   => $package
+    source   => $logstash::package
   }
 
   file { '/etc/sysconfig/logstash-forwarder':
