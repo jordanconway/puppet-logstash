@@ -18,7 +18,7 @@ class logstash::forwarder inherits logstash {
   package { 'logstash-forwarder':
     ensure   => installed,
     provider => 'rpm',
-    source   => $logstash::package
+    source   => $package
   }
 
   file { '/etc/sysconfig/logstash-forwarder':
