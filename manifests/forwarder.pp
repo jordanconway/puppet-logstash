@@ -13,7 +13,7 @@ class logstash::forwarder (
   $servers,
   $timeout,
   $conf_ssl_ca,
-)inherits logstash {
+) {
 
   $config = hiera_hash(logstash::config,'UNSET')
 
