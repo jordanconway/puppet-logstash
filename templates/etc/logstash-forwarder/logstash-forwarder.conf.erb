@@ -1,4 +1,4 @@
 <%- require 'json' %>
 <%- yaml_hash = @config %>
 <%- json_hash = yaml_hash.keys.sort.map {|k| [k, yaml_hash[k]]} %>
-<%= json_hash.to_json %>
+<%= Hash[json_hash].to_json %>
