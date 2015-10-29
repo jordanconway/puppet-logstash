@@ -1,4 +1,4 @@
-<% yaml_hash = $config %>
+<% yaml_hash = @config %>
 <% json_hash = yaml_hash.keys.sort.map {|k| [k, yaml_hash[k]]} %>
 
 <%= puts Hash[json_hash] %>
