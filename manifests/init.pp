@@ -13,7 +13,21 @@ class logstash (
   $timeout = $logstash::params::network::servers::timeout,
   $conf_ssl_ca = $logstash::params::network::servers::ssl_ca
 
-){
-  include logstash::params
+) inherits logstash::params{
+
+  class { '::logstash::forwarder':
+    server      => $server,
+    port        => $port,
+    ssl_dir     => $ssl_dir,
+    ssl_ca      => $ssl_ca,
+    ssl_cert    => $ssl_cert,
+    ssl_key     => $ssl_key,
+    package     => $package,
+    servers     => $servers,
+    timeout     => $timeout,
+    conf_ssl_ca => $conf_ssl_ca,
+
+  }
+
 
 }
