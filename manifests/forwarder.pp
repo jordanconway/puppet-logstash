@@ -64,7 +64,7 @@ class logstash::forwarder (
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    content => template('logstash/etc/logstash-forwarder/logstash-forwarder.conf.erb'),
+    content => template('logstash/logstash-forwarder.conf.erb'),
     require => [File['/etc/logstash-forwarder'],Package['logstash-forwarder']]
   }
 
