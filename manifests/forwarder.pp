@@ -33,22 +33,75 @@ class logstash::forwarder (
     source   => $logstash::package
   }
 
-  file { '/etc/sysconfig/logstash-forwarder':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/logstash/etc/sysconfig/logstash-forwarder',
-    require => Package['logstash-forwarder']
-  }
+  case $::operatingsystem {
+    'CentOS','RedHat': {
+      case $::operatingsystemmajrelease {
+        '6': {
+          file { '/etc/sysconfig/logstash-forwarder':
+            ensure  => present,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0644',
+            source  => 'puppet:///modules/logstash/etc/sysconfig/logstash-forwarder',
+            require => Package['logstash-forwarder']
+          }
 
-  file { '/etc/init.d/logstash-forwarder':
-    ensure  => present,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/logstash/etc/init.d/logstash-forwarder',
-    require => Package['logstash-forwarder']
+          file { '/etc/init.d/logstash-forwarder':
+            ensure  => present,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0755',
+            source  => 'puppet:///modules/logstash/etc/init.d/logstash-forwarder',
+            require => Package['logstash-forwarder']
+          }
+  
+          service {'logstash-forwarder':
+            ensure     => running,
+            enable     => true,
+            hasstatus  => true,
+            hasrestart => true,
+            require    => [
+              Package['logstash-forwarder'],
+              File['/etc/sysconfig/logstash-forwarder'],
+              File['/etc/init.d/logstash-forwarder'],
+              File['/etc/logstash-forwarder/logstash-forwarder.conf'],
+            ],
+            subscribe  =>  [
+              File['/etc/logstash-forwarder/logstash-forwarder.conf'],
+              File['/etc/sysconfig/logstash-forwarder'],
+            ]
+          }
+        }
+        '7': {
+          file { '/usr/lib/systemd/system/logstash-forwarder.service':
+            ensure  => present,
+            owner   => 'root',
+            group   => 'root',
+            mode    => '0644',
+            source  => 'puppet:///modules/logstash/logstash-forwarder.service',
+            require => Package['logstash-forwarder']
+          }
+
+          service {'logstash-forwarder':
+            ensure     => running,
+            enable     => true,
+            hasstatus  => true,
+            hasrestart => true,
+            require    => [
+              Package['logstash-forwarder'],
+              File['/usr/lib/systemd/system/logstash-forwarder.service'],
+              File['/etc/logstash-forwarder/logstash-forwarder.conf'],
+            ],
+            subscribe  =>  [
+              File['/etc/logstash-forwarder/logstash-forwarder.conf'],
+              File['/etc/sysconfig/logstash-forwarder'],
+            ]
+          }
+        }
+        default: { fail("logstash::forwarder has no love for  ${::operatingsystem} ${::operatingsystemmajrelease}") } # lint:ignore:80chars
+      }
+    }
+    default: { fail("logstash::forwarder has no love for ${::operatingsystem}") } # lint:ignore:80chars
   }
   
   file { '/etc/logstash-forwarder':
@@ -68,21 +121,5 @@ class logstash::forwarder (
     require => [File['/etc/logstash-forwarder'],Package['logstash-forwarder']]
   }
 
-  service {'logstash-forwarder':
-    ensure     => running,
-    enable     => true,
-    hasstatus  => true,
-    hasrestart => true,
-    require    => [
-      Package['logstash-forwarder'],
-      File['/etc/sysconfig/logstash-forwarder'],
-      File['/etc/init.d/logstash-forwarder'],
-      File['/etc/logstash-forwarder/logstash-forwarder.conf'],
-    ],
-    subscribe  =>  [
-      File['/etc/logstash-forwarder/logstash-forwarder.conf'],
-      File['/etc/sysconfig/logstash-forwarder'],
-    ]
-  }
 
 }
