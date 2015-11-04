@@ -94,7 +94,6 @@ class logstash::forwarder (
             ],
             subscribe  =>  [
               File['/etc/logstash-forwarder/logstash-forwarder.conf'],
-              File['/etc/sysconfig/logstash-forwarder'],
             ]
           }
         }
