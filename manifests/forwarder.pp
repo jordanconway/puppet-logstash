@@ -2,41 +2,22 @@
 #
 # Installs and configures logstash::forwarder
 class logstash::forwarder (
-
-  $server,
-  $port,
-  $ssl_dir,
-  $ssl_ca,
-  $ssl_cert,
-  $ssl_key,
   $package,
-  $servers,
-  $timeout,
-  $conf_ssl_ca,
 ) {
 
   $config = hiera_hash(logstash::config,'UNSET')
 
-  if $logstash::use_ssl {
-    file { "${logstash::ssl_dir}/certs/logstash-forwarder.ca":
-      owner    => 'root',
-      group    => '0',
-      mode     => '0444',
-      source   => $logstash::ssl_ca,
-      notifies => Service['logstash-forwarder']
-    }
-  }
-
-  package { 'logstash-forwarder':
-    ensure   => installed,
-    provider => 'rpm',
-    source   => $logstash::package
-  }
 
   case $::operatingsystem {
     'CentOS','RedHat': {
       case $::operatingsystemmajrelease {
         '6': {
+          package { 'logstash-forwarder':
+            ensure   => installed,
+            provider => 'rpm',
+            source   => $logstash::package
+          }
+  
           file { '/etc/sysconfig/logstash-forwarder':
             ensure  => present,
             owner   => 'root',
@@ -73,6 +54,12 @@ class logstash::forwarder (
           }
         }
         '7': {
+          package { 'logstash-forwarder':
+            ensure   => installed,
+            provider => 'rpm',
+            source   => $logstash::package
+          }
+  
           file { '/usr/lib/systemd/system/logstash-forwarder.service':
             ensure  => present,
             owner   => 'root',
@@ -119,6 +106,4 @@ class logstash::forwarder (
     content => template('logstash/logstash-forwarder.conf.erb'),
     require => [File['/etc/logstash-forwarder'],Package['logstash-forwarder']]
   }
-
-
 }
