@@ -1,5 +1,7 @@
 # logstash
 
+[![Build Status](https://travis-ci.org/jordanconway/puppet-logstash.png)](https://travis-ci.org/jordanconway/puppet-logstash)
+
 TOTALLY NOT READY
 
 #### Table of Contents
