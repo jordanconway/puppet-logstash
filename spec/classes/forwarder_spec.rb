@@ -1,5 +1,6 @@
 require 'spec_helper'
-describe 'logstash' do
+describe 'logstash::forwarder' do
+  # Force our osfamily so that our forwarder class doesn't croak
   let(:facts) {
     {
       :fqdn            => 'test.example.com',
@@ -12,8 +13,6 @@ describe 'logstash' do
   }
 
   context 'with defaults for all parameters' do
-    it { should contain_class('logstash') }
-    it { should contain_class('logstash::forwarder') }
+    it { should contain_class('logstash::forwarder')}
   end
-
 end

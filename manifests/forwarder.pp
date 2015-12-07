@@ -2,10 +2,10 @@
 #
 # Installs and configures logstash::forwarder
 class logstash::forwarder (
-  $package,
-) {
+  $package = $logstash::params::package,
+) inherits logstash::params {
 
-  $config = hiera_hash(logstash::config,'UNSET')
+  $config = hiera_hash(logstash::config, $::logstash::params::config)
 
 
   case $::operatingsystem {
