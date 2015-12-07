@@ -7,3 +7,4 @@ gem 'puppet-lint', '>= 1.0.0'
 gem 'facter', '>= 1.7.0'
 gem 'rspec'
 gem 'rspec-puppet'
+gem 'rspec-puppet-facts', :require => false
