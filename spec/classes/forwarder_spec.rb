@@ -13,6 +13,17 @@ describe 'logstash::forwarder' do
           'hasstatus'  => true,
           'hasrestart' => true, 
        ) }
+        it { should contain_package('logstash-forwarder').with(
+          'ensure'   => 'installed',
+          'provider' => 'rpm',
+          'source'   => 'https://download.elastic.co/logstash-forwarder/binaries/logstash-forwarder-0.4.0-1.x86_64.rpm', 
+       ) }
+        it { should contain_file('/etc/logstash-forwarder').with(
+          'ensure'   => 'directory',
+          'owner' => 'root',
+          'group' => 'root',
+          'mode' => '0644',
+       ).that_requires('Package[logstash-forwarder]') }
       end
     end
   end

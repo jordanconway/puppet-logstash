@@ -12,12 +12,6 @@ class logstash::forwarder (
     'CentOS','RedHat': {
       case $::operatingsystemmajrelease {
         '6': {
-          package { 'logstash-forwarder':
-            ensure   => installed,
-            provider => 'rpm',
-            source   => $logstash::package
-          }
-  
           file { '/etc/sysconfig/logstash-forwarder':
             ensure  => present,
             owner   => 'root',
@@ -54,12 +48,6 @@ class logstash::forwarder (
           }
         }
         '7': {
-          package { 'logstash-forwarder':
-            ensure   => installed,
-            provider => 'rpm',
-            source   => $logstash::package
-          }
-  
           file { '/usr/lib/systemd/system/logstash-forwarder.service':
             ensure  => present,
             owner   => 'root',
@@ -88,6 +76,12 @@ class logstash::forwarder (
       }
     }
     default: { fail("logstash::forwarder has no love for ${::operatingsystem}") } # lint:ignore:80chars
+  }
+          
+  package { 'logstash-forwarder':
+    ensure   => installed,
+    provider => 'rpm',
+    source   => $package
   }
   
   file { '/etc/logstash-forwarder':
