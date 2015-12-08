@@ -26,14 +26,83 @@ describe 'logstash::forwarder' do
           'group'  => 'root',
           'mode'   => '0644',
           'source' => 'puppet:///modules/logstash/etc/sysconfig/logstash-forwarder',
-          ).that_requires('Package[logstash-forwarder]') }
+          ).that_requires('Package[logstash-forwarder]').with_content('
+# From The Logstash Book
+# # The original of this file can be found at: http://logstashbook.com/code/index.html
+# #
+# # Options for the Logstash Forwarder
+# LOGSTASH_FORWARDER_OPTIONS="-config /etc/logstash-forwarder/logstash-forwarder.conf -spool-size 100"
+          ')}
         it { should contain_file('/etc/init.d/logstash-forwarder').with(
           'ensure'   => 'present',
           'owner'  => 'root',
           'group'  => 'root',
           'mode'   => '0755',
           'source' => 'puppet:///modules/logstash/etc/init.d/logstash-forwarder',
-          ).that_requires('Package[logstash-forwarder]') }
+          ).that_requires('Package[logstash-forwarder]').with_content('
+#! /bin/sh
+# From The Logstash Book
+# The original of this file can be found at: http://logstashbook.com/code/index.html
+#
+# logstash-forwarder Start/Stop logstash-forwarder
+#
+# chkconfig: 345 99 99
+# description: logstash-forwarder
+# processname: logstash-forwarder
+
+# Check config
+test -f /etc/sysconfig/logstash-forwarder && . /etc/sysconfig/logstash-forwarder
+
+LOGSTASH_FORWARDER_BIN="/opt/logstash-forwarder/bin/logstash-forwarder"
+
+find_logstash_forwarder_process () {
+    PIDTEMP=`pgrep -f ${LOGSTASH_FORWARDER_BIN}`
+    # Pid not found
+    if [ "x$PIDTEMP" = "x" ]; then
+        PID=-1
+    else
+        PID=$PIDTEMP
+    fi
+}
+
+start () {
+  nohup ${LOGSTASH_FORWARDER_BIN} ${LOGSTASH_FORWARDER_OPTIONS} &
+}
+
+stop () {
+  pkill -f ${LOGSTASH_FORWARDER_BIN}
+}
+
+case $1 in
+start)
+        start
+        ;;
+stop)
+        stop
+        exit 0;
+        ;;
+reload)
+        stop
+        start
+        ;;
+restart)
+        stop
+        start
+        ;;
+status)
+        find_logstash_forwarder_process
+        if [ $PID -gt 0 ]; then
+            exit 0
+        else
+            exit 1
+fi
+        ;;
+*fi)
+        echo $"Usage: $0 {start|stop|restart|reload|status}"
+        RETVAL=1
+esac
+exit 0
+          ')}
         it { should contain_service('logstash-forwarder').with(
           'ensure'     => 'running',
           'enable'     => true,
@@ -54,7 +123,23 @@ describe 'logstash::forwarder' do
           'group'  => 'root',
           'mode'   => '0644',
           'source' => 'puppet:///modules/logstash/logstash-forwarder.service',
-         ).that_requires('Package[logstash-forwarder]') }
+         ).that_requires('Package[logstash-forwarder]').with_content('
+[Unit]
+Description=Logstash Forwarder is a tool to collect logs locally in preparation for processing elsewhere!
+Documentation=https://github.com/elasticsearch/logstash-forwarder
+After=network.target remote-fs.target nss-lookup.target
+ 
+[Service]
+User=root
+Group=root
+Type=simple
+PIDFile=/var/run/logstash-forwarder.pid
+ExecStart=/opt/logstash-forwarder/bin/logstash-forwarder -config /etc/logstash-forwarder/logstash-forwarder.conf -spool-size 100
+PrivateTmp=true
+ 
+[Install]
+WantedBy=multi-user.target
+          ')}
         it { should contain_service('logstash-forwarder').with(
           'ensure'     => 'running',
           'enable'     => true,
