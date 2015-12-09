@@ -51,7 +51,7 @@ class logstash::forwarder (
             owner   => 'root',
             group   => 'root',
             mode    => '0644',
-            source  => 'puppet:///modules/logstash/logstash-forwarder.service',
+            source  => 'puppet:///modules/logstash/usr/lib/systemd/system/logstash-forwarder.service',
             require => Package['logstash-forwarder']
           }
 
