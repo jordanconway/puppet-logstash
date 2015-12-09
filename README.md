@@ -2,8 +2,6 @@
 
 [![Build Status](https://travis-ci.org/jordanconway/puppet-logstash.png)](https://travis-ci.org/jordanconway/puppet-logstash)
 
-TOTALLY NOT READY
-
 #### Table of Contents
 
 1. [Overview](#overview)
@@ -19,46 +17,151 @@ TOTALLY NOT READY
 
 ## Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves.
-This is your 30 second elevator pitch for your module. Consider including
+This module will install and configure logstash (currently only forwarder) for
+Redhat and CentOS 6.x and 7.x.
+It is best managed with Puppet 3+ and hiera but should work without hiera.
 OS/Puppet version it works with.
 
 ## Module Description
 
-If applicable, this section should have a brief description of the technology
-the module integrates with and what that integration enables. This section
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?"
-
-If your module has a range of functionality (installation, configuration,
-management, etc.) this is the time to mention it.
+Currently installs and configures logstash-forwarder (eventually 
+logstash-server maybe). Use in conjunction with an already configured
+logstash server, or another module that provides logstash-server setup
+but nothing for logstash-forwarder.
 
 ## Setup
 
 ### What logstash affects
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
+* logstash rpm package (all)
+* logstash-forwarder service (all)
+* /etc/logstash-forwarder/logstash-forwarder.conf (ALL)
+* /etc/sysconfig/logstash-forwarder (EL6)
+* /etc/init.d/logstash-forwarder (EL6)
+* /usr/lib/systemd/system/logstash-forwarder.service (EL7)
 
-### Setup Requirements **OPTIONAL**
+### Setup Requirements
 
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
+You should already be running a logstash server, this module does not yet cover that.
+I found that there were plenty of modules to setup logstash server, but very few to none
+that covered logstash-forwarder so that's where I started with this one. Eventually I may
+expand it to cover logstash-server.
 
 ### Beginning with logstash
 
-The very basic steps needed for a user to get the module up and running.
+Minimum required setup: For now I am only describing logstash::forwarder
 
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you may wish to include an additional section here: Upgrading
-(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+Enable logstash::forwarder for the nodes you will be shipping logs from
+This will either be done in roles/profiles or your ENC.
+
+Variables to set: The variables that you should be setting depend on if you're using hiera or not.
+
+####Without Hiera:
+
+$package
+  String - Defaults to 'https://download.elastic.co/logstash-forwarder/binaries/logstash-forwarder-0.4.0-1.x86_64.rpm'
+  Check on the ElasticSearch site for the required package version for your instalation.
+$servers
+  Array - Defaults to ["logstash.${::domain}:${port}"]
+  Assuming your logstash server is named logstash and in the same domain as the rest of the machine you're setting up.
+$port
+  Int - Defaults to 5000
+  This is the listening port for your above logstash server(s).
+$timeout
+  Int - Defaults to 15
+  This is the number of seconds logstash-forwarder waits to timeout trying to reach the server.
+$use_ssl
+  Bool - Defaults to false
+  Set to true if you're going to use ssl
+$ssl_ca
+  String - Defaults to '/etc/pki/tls/certs/logstash-forwarder.crt'
+  The CA used to authenticate your downstream server - ignored if $use_ssl is false
+$paths
+  Hash - Defaults to
+```
+{ 'paths' => ['/var/log/messages', '/var/log/secure'],
+            'fields' => {
+              'type' => 'syslog'
+            }
+}
+```
+  This is the meat and potatoes of your logstash-forwarder setup. You'll want to add a new hash
+  stanza to it for each of the sets of files you're doing, it can take all of the normal
+  logstash-forwarder fields/types etc depending on what you're doing with the files, just
+  stick a new 'paths' stanza into the hash for each extra set of logs, like this:
+```
+{ 'paths' => ['/var/log/messages', '/var/log/secure'],
+            'fields' => {
+              'type' => 'syslog'
+            },
+  'paths' => ['/var/log/mail'],
+            'fields' => {
+              'type' => 'postfix'
+            }
+}
+```
+
+####With Hiera:
+I think the setup with Hiera is much easier, there are two separate entries logstash::package
+as above and logstash::config which is into one hash pulled from hiera. 
+Here is an example of something you can throw into common.yaml
+It is fairly close to an actual logstash config file, but yaml rather than json.
+You can more or less run a json -> yaml converter on a working logstash-forwarder config to
+get these values and clean them up a little bit.
+```
+logstash::package: 'http://download.elasticsearch.org/logstash-forwarder/packages/logstash-forwarder-0.3.1-1.x86_64.rpm'
+logstash::config:
+  network:
+    servers:
+      - 'logstash.yourdomain.tld:5000'
+    timeout: 15
+    ssl_ca: '/etc/pki/tls/certs/logstash-forwarder.crt'
+  files:
+    - paths:
+        - '/var/log/messages'
+        - '/var/log/secure'
+      fields:
+        type: syslog
+    - paths:
+        - '/var/log/httpd/access_log'
+      fields:
+        type: apache-access
+    - paths:
+        - '/var/log/httpd/error_log'
+      fields:
+        type: apache-error
+    - paths:
+        - '/var/log/haproxy.log'
+      fields:
+        type: haproxy-access
+    - paths:
+        - '/var/log/nginx/access.log'
+        - '/var/log/nginx/*-access.log'
+        - '/var/log/nginx/*.access.log'
+        - '/var/log/nginx/*.ssl_access.log'
+      fields:
+        type: nginx-access
+    - paths:
+        - '/var/log/nginx/error.log'
+      fields:
+        type: nginx-error
+    - paths:
+        - '/var/log/nginx/*-cache.log'
+      fields:
+        type: nginx-cache
+    - paths:
+        - '/var/log/maillog'
+      fields:
+        type: postfix
+    - paths:
+        - '/var/log/yum.log'
+      fields:
+        type: yum
+```
 
 ## Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing
-the fancy stuff with your module here.
+As above, set your variables and add the logstash::forwarder class to the requires nodes.
 
 ## Reference
 
@@ -69,15 +172,10 @@ with things. (We are working on automating this section!)
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+Only does logstash-forwarder at the moment. Manually tested on CentOS 7 with hiera,
+Automatic rspec tests for RedHat/Centos 6/7 have increasing coverage.
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
+Pull requests welcome!
 
-## Release Notes/Contributors/Etc **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You may also add any additional sections you feel are
-necessary or important to include here. Please use the `## ` header.
