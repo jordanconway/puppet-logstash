@@ -3,7 +3,12 @@
 # Installs and configures logstash::forwarder
 class logstash::forwarder (
   $package = $logstash::params::package,
-  $config = hiera_hash(logstash::config, $::logstash::params::config)
+  $servers = $logstash::params::servers,
+  $timeout = $logstash::params::timeout,
+  $use_ssl = $logstash::params::use_ssl,
+  $ssl_ca = $logstash::params::ssl_ca,
+  $paths =  $logstash::params::paths,
+  $config = hiera_hash(logstash::config, $::logstash::params::config),
 ) inherits logstash {
 
   case $::operatingsystem {
