@@ -58,26 +58,26 @@ Variables to set: The variables that you should be setting depend on if you're u
 
 ####Without Hiera:
 
-$package
-  String - Defaults to 'https://download.elastic.co/logstash-forwarder/binaries/logstash-forwarder-0.4.0-1.x86_64.rpm'
+* $package
+  _String_ - Defaults to 'https://download.elastic.co/logstash-forwarder/binaries/logstash-forwarder-0.4.0-1.x86_64.rpm'
   Check on the ElasticSearch site for the required package version for your instalation.
-$servers
-  Array - Defaults to ["logstash.${::domain}:${port}"]
+* $servers
+  _Array_ - Defaults to ["logstash.${::domain}:${port}"]
   Assuming your logstash server is named logstash and in the same domain as the rest of the machine you're setting up.
-$port
-  Int - Defaults to 5000
+* $port
+  _Int_ - Defaults to 5000
   This is the listening port for your above logstash server(s).
-$timeout
-  Int - Defaults to 15
+* $timeout
+  _Int_ - Defaults to 15
   This is the number of seconds logstash-forwarder waits to timeout trying to reach the server.
-$use_ssl
-  Bool - Defaults to false
+* $use_ssl
+  _Bool_ - Defaults to false
   Set to true if you're going to use ssl
-$ssl_ca
-  String - Defaults to '/etc/pki/tls/certs/logstash-forwarder.crt'
+* $ssl_ca
+  _String_ - Defaults to '/etc/pki/tls/certs/logstash-forwarder.crt'
   The CA used to authenticate your downstream server - ignored if $use_ssl is false
-$paths
-  Hash - Defaults to
+* $paths
+  _Hash_ - Defaults to
 ```
 { 'paths' => ['/var/log/messages', '/var/log/secure'],
             'fields' => {
