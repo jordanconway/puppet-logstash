@@ -3,10 +3,8 @@
 # Installs and configures logstash::forwarder
 class logstash::forwarder (
   $package = $logstash::params::package,
-) inherits logstash::params {
-
   $config = hiera_hash(logstash::config, $::logstash::params::config)
-
+) inherits logstash {
 
   case $::operatingsystem {
     'CentOS','RedHat': {

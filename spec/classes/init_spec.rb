@@ -7,7 +7,6 @@ describe 'logstash' do
       end
       context 'with defaults for all parameters' do
         it { should contain_class('logstash') }
-        it { should contain_class('logstash::forwarder') }
       end
     end
   end

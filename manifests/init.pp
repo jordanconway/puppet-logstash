@@ -3,11 +3,8 @@
 class logstash (
 
   $package = $logstash::params::package,
+  $config = $logstash::params::config,
 
 ) inherits logstash::params{
-
-  class { '::logstash::forwarder':
-    package     => $package,
-  }
 
 }
