@@ -3,7 +3,8 @@
 class logstash::params {
 
   $package = 'https://download.elastic.co/logstash-forwarder/binaries/logstash-forwarder-0.4.0-1.x86_64.rpm'
-  $servers = ['logstash.localdomain:5000']
+  $servers = ["logstash.${::domain}:${port}"]
+  $port = 5000
   $timeout = '15'
   $use_ssl = false
   $ssl_ca = '/etc/pki/tls/certs/logstash-forwarder.crt'
